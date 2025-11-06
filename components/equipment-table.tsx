@@ -6,9 +6,11 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Pencil, Trash2, ExternalLink, Search, FileText } from "lucide-react"
+import { Pencil, Trash2, ExternalLink, Search, FileText, History, QrCode } from "lucide-react"
 import { EditEquipmentDialog } from "./edit-equipment-dialog"
 import { DeleteEquipmentDialog } from "./delete-equipment-dialog"
+import { EquipmentHistoryDialog } from "./equipment-history-dialog"
+import { EquipmentQRDialog } from "./equipment-qr-dialog"
 
 type Equipment = {
   id: string
@@ -29,6 +31,8 @@ type Equipment = {
 export function EquipmentTable({ equipment }: { equipment: Equipment[] }) {
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null)
   const [deletingEquipment, setDeletingEquipment] = useState<Equipment | null>(null)
+  const [historyEquipment, setHistoryEquipment] = useState<Equipment | null>(null)
+  const [qrEquipment, setQrEquipment] = useState<Equipment | null>(null)
 
   const [searchQuery, setSearchQuery] = useState("")
   const [availabilityFilter, setAvailabilityFilter] = useState<string>("all")
@@ -183,6 +187,17 @@ export function EquipmentTable({ equipment }: { equipment: Equipment[] }) {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="icon" onClick={() => setQrEquipment(item)} title="View QR Code">
+                        <QrCode className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setHistoryEquipment(item)}
+                        title="View History"
+                      >
+                        <History className="h-4 w-4" />
+                      </Button>
                       {item.receipt_file_url && (
                         <Button variant="ghost" size="icon" asChild>
                           <a href={item.receipt_file_url} target="_blank" rel="noopener noreferrer">
@@ -225,6 +240,24 @@ export function EquipmentTable({ equipment }: { equipment: Equipment[] }) {
           equipment={deletingEquipment}
           open={!!deletingEquipment}
           onOpenChange={(open) => !open && setDeletingEquipment(null)}
+        />
+      )}
+
+      {historyEquipment && (
+        <EquipmentHistoryDialog
+          equipmentId={historyEquipment.id}
+          equipmentName={historyEquipment.item_name}
+          open={!!historyEquipment}
+          onOpenChange={(open) => !open && setHistoryEquipment(null)}
+        />
+      )}
+
+      {qrEquipment && (
+        <EquipmentQRDialog
+          equipmentId={qrEquipment.id}
+          equipmentName={qrEquipment.item_name}
+          open={!!qrEquipment}
+          onOpenChange={(open) => !open && setQrEquipment(null)}
         />
       )}
     </>

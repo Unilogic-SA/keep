@@ -65,12 +65,35 @@ export function EditEquipmentDialog({
     }
   }
 
+  const logHistoryChange = async (field: string, oldValue: any, newValue: any) => {
+    if (oldValue === newValue) return
+
+    try {
+      await fetch("/api/equipment-history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          equipment_id: equipment.id,
+          field_changed: field,
+          old_value: oldValue,
+          new_value: newValue,
+        }),
+      })
+    } catch (error) {
+      console.error("Failed to log history:", error)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
 
     const formData = new FormData(e.currentTarget)
     const supabase = createClient()
+
+    const newAssignedTo = (formData.get("assigned_to") as string) || null
+    const newAvailability = formData.get("availability") as string
+    const newCondition = (formData.get("condition") as string) || null
 
     const { error } = await supabase
       .from("equipment")
@@ -79,14 +102,22 @@ export function EditEquipmentDialog({
         serial_number: (formData.get("serial_number") as string) || null,
         purchase_date: (formData.get("purchase_date") as string) || null,
         value: formData.get("value") ? Number.parseFloat(formData.get("value") as string) : null,
-        condition: (formData.get("condition") as string) || null,
-        assigned_to: (formData.get("assigned_to") as string) || null,
-        availability: formData.get("availability") as string,
+        condition: newCondition,
+        assigned_to: newAssignedTo,
+        availability: newAvailability,
         category: (formData.get("category") as string) || null,
         receipt_url: (formData.get("receipt_url") as string) || null,
         receipt_file_url: uploadedFile,
       })
       .eq("id", equipment.id)
+
+    if (!error) {
+      await Promise.all([
+        logHistoryChange("assigned_to", equipment.assigned_to, newAssignedTo),
+        logHistoryChange("availability", equipment.availability, newAvailability),
+        logHistoryChange("condition", equipment.condition, newCondition),
+      ])
+    }
 
     setIsLoading(false)
 
