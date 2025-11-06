@@ -66,42 +66,49 @@ export function AddEquipmentDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="item_name">Item Name</Label>
-            <Input id="item_name" name="item_name" placeholder="e.g., MacBook Pro" required />
+            <Label htmlFor="item_name">Item Name *</Label>
+            <Input
+              id="item_name"
+              name="item_name"
+              placeholder="e.g., MacBook Pro"
+              required
+              minLength={1}
+              maxLength={100}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="serial_number">Serial Number</Label>
-              <Input id="serial_number" name="serial_number" placeholder="Optional" />
+              <Input id="serial_number" name="serial_number" placeholder="Optional" maxLength={100} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="value">Value</Label>
-              <Input id="value" name="value" type="number" step="0.01" placeholder="0.00" />
+              <Input id="value" name="value" type="number" step="0.01" min="0" max="9999999.99" placeholder="0.00" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="purchase_date">Purchase Date</Label>
-              <Input id="purchase_date" name="purchase_date" type="date" />
+              <Input id="purchase_date" name="purchase_date" type="date" max={new Date().toISOString().split("T")[0]} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="condition">Condition</Label>
-              <Input id="condition" name="condition" placeholder="e.g., New, Good" />
+              <Input id="condition" name="condition" placeholder="e.g., New, Good" maxLength={50} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="assigned_to">Assigned To</Label>
-              <Input id="assigned_to" name="assigned_to" placeholder="Optional" />
+              <Input id="assigned_to" name="assigned_to" placeholder="Optional" maxLength={100} />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="availability">Availability</Label>
+              <Label htmlFor="availability">Availability *</Label>
               <Select name="availability" defaultValue="storage" required>
                 <SelectTrigger>
                   <SelectValue />
@@ -117,7 +124,7 @@ export function AddEquipmentDialog({
 
           <div className="space-y-2">
             <Label htmlFor="receipt_url">Receipt URL</Label>
-            <Input id="receipt_url" name="receipt_url" type="url" placeholder="https://..." />
+            <Input id="receipt_url" name="receipt_url" type="url" placeholder="https://..." maxLength={500} />
           </div>
 
           <div className="flex justify-end gap-3">

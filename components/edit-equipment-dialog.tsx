@@ -73,19 +73,39 @@ export function EditEquipmentDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="edit-item_name">Item Name</Label>
-            <Input id="edit-item_name" name="item_name" defaultValue={equipment.item_name} required />
+            <Label htmlFor="edit-item_name">Item Name *</Label>
+            <Input
+              id="edit-item_name"
+              name="item_name"
+              defaultValue={equipment.item_name}
+              required
+              minLength={1}
+              maxLength={100}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-serial_number">Serial Number</Label>
-              <Input id="edit-serial_number" name="serial_number" defaultValue={equipment.serial_number || ""} />
+              <Input
+                id="edit-serial_number"
+                name="serial_number"
+                defaultValue={equipment.serial_number || ""}
+                maxLength={100}
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="edit-value">Value</Label>
-              <Input id="edit-value" name="value" type="number" step="0.01" defaultValue={equipment.value || ""} />
+              <Input
+                id="edit-value"
+                name="value"
+                type="number"
+                step="0.01"
+                min="0"
+                max="9999999.99"
+                defaultValue={equipment.value || ""}
+              />
             </div>
           </div>
 
@@ -96,24 +116,30 @@ export function EditEquipmentDialog({
                 id="edit-purchase_date"
                 name="purchase_date"
                 type="date"
+                max={new Date().toISOString().split("T")[0]}
                 defaultValue={equipment.purchase_date || ""}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="edit-condition">Condition</Label>
-              <Input id="edit-condition" name="condition" defaultValue={equipment.condition || ""} />
+              <Input id="edit-condition" name="condition" defaultValue={equipment.condition || ""} maxLength={50} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-assigned_to">Assigned To</Label>
-              <Input id="edit-assigned_to" name="assigned_to" defaultValue={equipment.assigned_to || ""} />
+              <Input
+                id="edit-assigned_to"
+                name="assigned_to"
+                defaultValue={equipment.assigned_to || ""}
+                maxLength={100}
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-availability">Availability</Label>
+              <Label htmlFor="edit-availability">Availability *</Label>
               <Select name="availability" defaultValue={equipment.availability} required>
                 <SelectTrigger>
                   <SelectValue />
@@ -129,7 +155,13 @@ export function EditEquipmentDialog({
 
           <div className="space-y-2">
             <Label htmlFor="edit-receipt_url">Receipt URL</Label>
-            <Input id="edit-receipt_url" name="receipt_url" type="url" defaultValue={equipment.receipt_url || ""} />
+            <Input
+              id="edit-receipt_url"
+              name="receipt_url"
+              type="url"
+              defaultValue={equipment.receipt_url || ""}
+              maxLength={500}
+            />
           </div>
 
           <div className="flex justify-end gap-3">

@@ -65,18 +65,27 @@ export function AddSubscriptionDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" placeholder="e.g., Figma" required />
+            <Label htmlFor="name">Name *</Label>
+            <Input id="name" name="name" placeholder="e.g., Figma" required minLength={1} maxLength={100} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="cost">Cost</Label>
-              <Input id="cost" name="cost" type="number" step="0.01" placeholder="0.00" required />
+              <Label htmlFor="cost">Cost *</Label>
+              <Input
+                id="cost"
+                name="cost"
+                type="number"
+                step="0.01"
+                min="0"
+                max="999999.99"
+                placeholder="0.00"
+                required
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="billing_cycle">Billing Cycle</Label>
+              <Label htmlFor="billing_cycle">Billing Cycle *</Label>
               <Select name="billing_cycle" defaultValue="monthly" required>
                 <SelectTrigger>
                   <SelectValue />
@@ -90,24 +99,30 @@ export function AddSubscriptionDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="renewal_date">Renewal Date</Label>
-            <Input id="renewal_date" name="renewal_date" type="date" required />
+            <Label htmlFor="renewal_date">Renewal Date *</Label>
+            <Input
+              id="renewal_date"
+              name="renewal_date"
+              type="date"
+              min={new Date().toISOString().split("T")[0]}
+              required
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="owner">Owner</Label>
-              <Input id="owner" name="owner" placeholder="Optional" />
+              <Input id="owner" name="owner" placeholder="Optional" maxLength={100} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="team">Team</Label>
-              <Input id="team" name="team" placeholder="Optional" />
+              <Input id="team" name="team" placeholder="Optional" maxLength={100} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
+            <Label htmlFor="status">Status *</Label>
             <Select name="status" defaultValue="active" required>
               <SelectTrigger>
                 <SelectValue />

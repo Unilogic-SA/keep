@@ -71,18 +71,27 @@ export function EditSubscriptionDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="edit-name">Name</Label>
-            <Input id="edit-name" name="name" defaultValue={subscription.name} required />
+            <Label htmlFor="edit-name">Name *</Label>
+            <Input id="edit-name" name="name" defaultValue={subscription.name} required minLength={1} maxLength={100} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-cost">Cost</Label>
-              <Input id="edit-cost" name="cost" type="number" step="0.01" defaultValue={subscription.cost} required />
+              <Label htmlFor="edit-cost">Cost *</Label>
+              <Input
+                id="edit-cost"
+                name="cost"
+                type="number"
+                step="0.01"
+                min="0"
+                max="999999.99"
+                defaultValue={subscription.cost}
+                required
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-billing_cycle">Billing Cycle</Label>
+              <Label htmlFor="edit-billing_cycle">Billing Cycle *</Label>
               <Select name="billing_cycle" defaultValue={subscription.billing_cycle} required>
                 <SelectTrigger>
                   <SelectValue />
@@ -96,7 +105,7 @@ export function EditSubscriptionDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-renewal_date">Renewal Date</Label>
+            <Label htmlFor="edit-renewal_date">Renewal Date *</Label>
             <Input
               id="edit-renewal_date"
               name="renewal_date"
@@ -109,17 +118,17 @@ export function EditSubscriptionDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-owner">Owner</Label>
-              <Input id="edit-owner" name="owner" defaultValue={subscription.owner || ""} />
+              <Input id="edit-owner" name="owner" defaultValue={subscription.owner || ""} maxLength={100} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="edit-team">Team</Label>
-              <Input id="edit-team" name="team" defaultValue={subscription.team || ""} />
+              <Input id="edit-team" name="team" defaultValue={subscription.team || ""} maxLength={100} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-status">Status</Label>
+            <Label htmlFor="edit-status">Status *</Label>
             <Select name="status" defaultValue={subscription.status} required>
               <SelectTrigger>
                 <SelectValue />
