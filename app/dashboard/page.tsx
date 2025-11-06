@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DollarSign, Package, Calendar, TrendingUp } from "lucide-react"
 import { AppLayout } from "@/components/app-layout"
+import { CategorySpendingChart } from "@/components/category-spending-chart"
+import { CategoryHardwareChart } from "@/components/category-hardware-chart"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -105,7 +107,13 @@ export default async function DashboardPage() {
           </Card>
         </div>
 
-        {/* Upcoming Renewals List */}
+        {/* Category Charts and Upcoming Renewals */}
+        <div className="grid gap-4 md:grid-cols-2 mb-8">
+          <CategorySpendingChart subscriptions={subscriptions || []} />
+          <CategoryHardwareChart equipment={equipment || []} />
+        </div>
+
+        {/* Upcoming Renewals */}
         <Card>
           <CardHeader>
             <CardTitle>Upcoming Renewals</CardTitle>

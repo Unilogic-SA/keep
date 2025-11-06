@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Pencil, Trash2, ExternalLink, Search } from "lucide-react"
+import { Pencil, Trash2, ExternalLink, Search, FileText } from "lucide-react"
 import { EditEquipmentDialog } from "./edit-equipment-dialog"
 import { DeleteEquipmentDialog } from "./delete-equipment-dialog"
 
@@ -19,7 +19,9 @@ type Equipment = {
   condition: string | null
   assigned_to: string | null
   availability: string
+  category: string | null
   receipt_url: string | null
+  receipt_file_url: string | null
   user_id: string
   created_at: string
 }
@@ -30,6 +32,7 @@ export function EquipmentTable({ equipment }: { equipment: Equipment[] }) {
 
   const [searchQuery, setSearchQuery] = useState("")
   const [availabilityFilter, setAvailabilityFilter] = useState<string>("all")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all")
 
   const getAvailabilityColor = (availability: string) => {
     switch (availability) {
@@ -44,6 +47,25 @@ export function EquipmentTable({ equipment }: { equipment: Equipment[] }) {
     }
   }
 
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "Computers":
+        return "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20"
+      case "Cameras":
+        return "bg-pink-500/10 text-pink-500 hover:bg-pink-500/20"
+      case "Audio":
+        return "bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20"
+      case "Networking":
+        return "bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/20"
+      case "Furniture":
+        return "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20"
+      case "Accessories":
+        return "bg-teal-500/10 text-teal-500 hover:bg-teal-500/20"
+      default:
+        return "bg-gray-500/10 text-gray-500 hover:bg-gray-500/20"
+    }
+  }
+
   const filteredEquipment = useMemo(() => {
     return equipment.filter((item) => {
       const matchesSearch =
@@ -52,10 +74,11 @@ export function EquipmentTable({ equipment }: { equipment: Equipment[] }) {
         item.assigned_to?.toLowerCase().includes(searchQuery.toLowerCase())
 
       const matchesAvailability = availabilityFilter === "all" || item.availability === availabilityFilter
+      const matchesCategory = categoryFilter === "all" || item.category === categoryFilter
 
-      return matchesSearch && matchesAvailability
+      return matchesSearch && matchesAvailability && matchesCategory
     })
-  }, [equipment, searchQuery, availabilityFilter])
+  }, [equipment, searchQuery, availabilityFilter, categoryFilter])
 
   if (equipment.length === 0) {
     return (
@@ -77,6 +100,21 @@ export function EquipmentTable({ equipment }: { equipment: Equipment[] }) {
             className="pl-9"
           />
         </div>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="Computers">Computers</SelectItem>
+            <SelectItem value="Cameras">Cameras</SelectItem>
+            <SelectItem value="Audio">Audio</SelectItem>
+            <SelectItem value="Networking">Networking</SelectItem>
+            <SelectItem value="Furniture">Furniture</SelectItem>
+            <SelectItem value="Accessories">Accessories</SelectItem>
+            <SelectItem value="Other">Other</SelectItem>
+          </SelectContent>
+        </Select>
         <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
           <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Availability" />
@@ -95,6 +133,7 @@ export function EquipmentTable({ equipment }: { equipment: Equipment[] }) {
           <TableHeader>
             <TableRow>
               <TableHead>Item Name</TableHead>
+              <TableHead>Category</TableHead>
               <TableHead>Serial Number</TableHead>
               <TableHead>Value</TableHead>
               <TableHead>Purchase Date</TableHead>
@@ -107,7 +146,7 @@ export function EquipmentTable({ equipment }: { equipment: Equipment[] }) {
           <TableBody>
             {filteredEquipment.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                   No equipment matches your filters
                 </TableCell>
               </TableRow>
@@ -115,6 +154,15 @@ export function EquipmentTable({ equipment }: { equipment: Equipment[] }) {
               filteredEquipment.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.item_name}</TableCell>
+                  <TableCell>
+                    {item.category ? (
+                      <Badge variant="secondary" className={getCategoryColor(item.category)}>
+                        {item.category}
+                      </Badge>
+                    ) : (
+                      "-"
+                    )}
+                  </TableCell>
                   <TableCell>{item.serial_number || "-"}</TableCell>
                   <TableCell>{item.value ? `$${Number.parseFloat(item.value.toString()).toFixed(2)}` : "-"}</TableCell>
                   <TableCell>
@@ -135,6 +183,13 @@ export function EquipmentTable({ equipment }: { equipment: Equipment[] }) {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      {item.receipt_file_url && (
+                        <Button variant="ghost" size="icon" asChild>
+                          <a href={item.receipt_file_url} target="_blank" rel="noopener noreferrer">
+                            <FileText className="h-4 w-4" />
+                          </a>
+                        </Button>
+                      )}
                       {item.receipt_url && (
                         <Button variant="ghost" size="icon" asChild>
                           <a href={item.receipt_url} target="_blank" rel="noopener noreferrer">

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Upload } from "lucide-react"
 
 type Equipment = {
   id: string
@@ -20,7 +21,9 @@ type Equipment = {
   condition: string | null
   assigned_to: string | null
   availability: string
+  category: string | null
   receipt_url: string | null
+  receipt_file_url: string | null
 }
 
 export function EditEquipmentDialog({
@@ -33,7 +36,34 @@ export function EditEquipmentDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const [isLoading, setIsLoading] = useState(false)
+  const [uploadedFile, setUploadedFile] = useState<string | null>(equipment.receipt_file_url)
+  const [isUploading, setIsUploading] = useState(false)
   const router = useRouter()
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    const formData = new FormData()
+    formData.append("file", file)
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (response.ok) {
+        const { url } = await response.json()
+        setUploadedFile(url)
+      }
+    } catch (error) {
+      console.error("Upload failed:", error)
+    } finally {
+      setIsUploading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -52,7 +82,9 @@ export function EditEquipmentDialog({
         condition: (formData.get("condition") as string) || null,
         assigned_to: (formData.get("assigned_to") as string) || null,
         availability: formData.get("availability") as string,
+        category: (formData.get("category") as string) || null,
         receipt_url: (formData.get("receipt_url") as string) || null,
+        receipt_file_url: uploadedFile,
       })
       .eq("id", equipment.id)
 
@@ -66,7 +98,7 @@ export function EditEquipmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Equipment</DialogTitle>
           <DialogDescription>Update equipment details.</DialogDescription>
@@ -82,6 +114,24 @@ export function EditEquipmentDialog({
               minLength={1}
               maxLength={100}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-category">Category</Label>
+            <Select name="category" defaultValue={equipment.category || undefined}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Computers">Computers</SelectItem>
+                <SelectItem value="Cameras">Cameras</SelectItem>
+                <SelectItem value="Audio">Audio</SelectItem>
+                <SelectItem value="Networking">Networking</SelectItem>
+                <SelectItem value="Furniture">Furniture</SelectItem>
+                <SelectItem value="Accessories">Accessories</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -162,6 +212,26 @@ export function EditEquipmentDialog({
               defaultValue={equipment.receipt_url || ""}
               maxLength={500}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-receipt_file">Upload Receipt/Warranty (PDF, Image)</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="edit-receipt_file"
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+                className="flex-1"
+              />
+              {isUploading && <Upload className="h-4 w-4 animate-pulse" />}
+            </div>
+            {uploadedFile && (
+              <p className="text-xs text-green-600">
+                {uploadedFile === equipment.receipt_file_url ? "Current file attached" : "New file uploaded"}
+              </p>
+            )}
           </div>
 
           <div className="flex justify-end gap-3">

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { FileText } from "lucide-react"
 
 type Subscription = {
   id: string
@@ -20,6 +21,8 @@ type Subscription = {
   owner: string | null
   team: string | null
   status: string
+  category?: string | null
+  invoice_file_url?: string | null
 }
 
 export function EditSubscriptionDialog({
@@ -32,6 +35,7 @@ export function EditSubscriptionDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const [isLoading, setIsLoading] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -39,6 +43,27 @@ export function EditSubscriptionDialog({
     setIsLoading(true)
 
     const formData = new FormData(e.currentTarget)
+
+    let invoiceFileUrl = subscription.invoice_file_url
+    if (selectedFile) {
+      try {
+        const uploadFormData = new FormData()
+        uploadFormData.append("file", selectedFile)
+
+        const uploadResponse = await fetch("/api/upload", {
+          method: "POST",
+          body: uploadFormData,
+        })
+
+        if (uploadResponse.ok) {
+          const { url } = await uploadResponse.json()
+          invoiceFileUrl = url
+        }
+      } catch (error) {
+        console.error("File upload failed:", error)
+      }
+    }
+
     const supabase = createClient()
 
     const { error } = await supabase
@@ -51,6 +76,8 @@ export function EditSubscriptionDialog({
         owner: (formData.get("owner") as string) || null,
         team: (formData.get("team") as string) || null,
         status: formData.get("status") as string,
+        category: (formData.get("category") as string) || null,
+        invoice_file_url: invoiceFileUrl,
       })
       .eq("id", subscription.id)
 
@@ -58,13 +85,14 @@ export function EditSubscriptionDialog({
 
     if (!error) {
       onOpenChange(false)
+      setSelectedFile(null)
       router.refresh()
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Subscription</DialogTitle>
           <DialogDescription>Update subscription details.</DialogDescription>
@@ -115,6 +143,27 @@ export function EditSubscriptionDialog({
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="edit-category">Category</Label>
+            <Select name="category" defaultValue={subscription.category || undefined}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Marketing">Marketing</SelectItem>
+                <SelectItem value="Design">Design</SelectItem>
+                <SelectItem value="Development">Development</SelectItem>
+                <SelectItem value="Operations">Operations</SelectItem>
+                <SelectItem value="Sales">Sales</SelectItem>
+                <SelectItem value="HR">HR</SelectItem>
+                <SelectItem value="Finance">Finance</SelectItem>
+                <SelectItem value="Legal">Legal</SelectItem>
+                <SelectItem value="IT">IT</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-owner">Owner</Label>
@@ -139,6 +188,42 @@ export function EditSubscriptionDialog({
                 <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-invoice_file">Invoice/Contract (PDF)</Label>
+            {subscription.invoice_file_url && !selectedFile && (
+              <div className="flex items-center gap-2 p-2 rounded-md bg-muted mb-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <a
+                  href={subscription.invoice_file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-600 hover:underline flex-1"
+                >
+                  View current file
+                </a>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <Input
+                id="edit-invoice_file"
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                className="cursor-pointer"
+              />
+              {selectedFile && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedFile(null)}>
+                  Clear
+                </Button>
+              )}
+            </div>
+            {selectedFile && (
+              <p className="text-xs text-muted-foreground">
+                New file: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+              </p>
+            )}
           </div>
 
           <div className="flex justify-end gap-3">

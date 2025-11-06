@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Pencil, Trash2, Search } from "lucide-react"
+import { Pencil, Trash2, Search, FileText } from "lucide-react"
 import { EditSubscriptionDialog } from "./edit-subscription-dialog"
 import { DeleteSubscriptionDialog } from "./delete-subscription-dialog"
 
@@ -21,6 +21,8 @@ type Subscription = {
   status: string
   user_id: string
   created_at: string
+  category?: string | null
+  invoice_file_url?: string | null
 }
 
 export function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }) {
@@ -30,6 +32,7 @@ export function SubscriptionsTable({ subscriptions }: { subscriptions: Subscript
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [billingCycleFilter, setBillingCycleFilter] = useState<string>("all")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all")
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -53,10 +56,11 @@ export function SubscriptionsTable({ subscriptions }: { subscriptions: Subscript
 
       const matchesStatus = statusFilter === "all" || subscription.status === statusFilter
       const matchesBillingCycle = billingCycleFilter === "all" || subscription.billing_cycle === billingCycleFilter
+      const matchesCategory = categoryFilter === "all" || subscription.category === categoryFilter
 
-      return matchesSearch && matchesStatus && matchesBillingCycle
+      return matchesSearch && matchesStatus && matchesBillingCycle && matchesCategory
     })
-  }, [subscriptions, searchQuery, statusFilter, billingCycleFilter])
+  }, [subscriptions, searchQuery, statusFilter, billingCycleFilter, categoryFilter])
 
   if (subscriptions.length === 0) {
     return (
@@ -68,7 +72,7 @@ export function SubscriptionsTable({ subscriptions }: { subscriptions: Subscript
 
   return (
     <>
-      <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center">
+      <div className="flex gap-4 mb-4 flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -78,7 +82,7 @@ export function SubscriptionsTable({ subscriptions }: { subscriptions: Subscript
             className="pl-9"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Status" />
@@ -100,6 +104,24 @@ export function SubscriptionsTable({ subscriptions }: { subscriptions: Subscript
               <SelectItem value="annual">Annual</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="Marketing">Marketing</SelectItem>
+              <SelectItem value="Design">Design</SelectItem>
+              <SelectItem value="Development">Development</SelectItem>
+              <SelectItem value="Operations">Operations</SelectItem>
+              <SelectItem value="Sales">Sales</SelectItem>
+              <SelectItem value="HR">HR</SelectItem>
+              <SelectItem value="Finance">Finance</SelectItem>
+              <SelectItem value="Legal">Legal</SelectItem>
+              <SelectItem value="IT">IT</SelectItem>
+              <SelectItem value="Other">Other</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -108,19 +130,21 @@ export function SubscriptionsTable({ subscriptions }: { subscriptions: Subscript
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Category</TableHead>
               <TableHead>Cost</TableHead>
               <TableHead>Billing Cycle</TableHead>
               <TableHead>Renewal Date</TableHead>
               <TableHead>Owner</TableHead>
               <TableHead>Team</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>File</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredSubscriptions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                   No subscriptions match your filters
                 </TableCell>
               </TableRow>
@@ -128,6 +152,13 @@ export function SubscriptionsTable({ subscriptions }: { subscriptions: Subscript
               filteredSubscriptions.map((subscription) => (
                 <TableRow key={subscription.id}>
                   <TableCell className="font-medium">{subscription.name}</TableCell>
+                  <TableCell>
+                    {subscription.category ? (
+                      <Badge variant="outline">{subscription.category}</Badge>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
                   <TableCell>${Number.parseFloat(subscription.cost.toString()).toFixed(2)}</TableCell>
                   <TableCell className="capitalize">{subscription.billing_cycle}</TableCell>
                   <TableCell>
@@ -143,6 +174,20 @@ export function SubscriptionsTable({ subscriptions }: { subscriptions: Subscript
                     <Badge variant="secondary" className={getStatusColor(subscription.status)}>
                       {subscription.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {subscription.invoice_file_url ? (
+                      <a
+                        href={subscription.invoice_file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-blue-600 hover:underline"
+                      >
+                        <FileText className="h-4 w-4" />
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
