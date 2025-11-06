@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -18,8 +18,16 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
+  useEffect(() => {
+    console.log("[v0] Login page mounted")
+    return () => {
+      console.log("[v0] Login page unmounted")
+    }
+  }, [])
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("[v0] Login form submitted")
     const supabase = createClient()
     setIsLoading(true)
     setError(null)
@@ -30,8 +38,10 @@ export default function LoginPage() {
         password,
       })
       if (error) throw error
+      console.log("[v0] Login successful, redirecting to dashboard")
       router.push("/dashboard")
     } catch (error: unknown) {
+      console.log("[v0] Login error:", error)
       setError(error instanceof Error ? error.message : "An error occurred")
     } finally {
       setIsLoading(false)
