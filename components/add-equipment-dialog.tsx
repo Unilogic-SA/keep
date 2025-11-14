@@ -3,8 +3,9 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import { createClient } from "@/lib/supabase/client"
+import { toast } from "@/hooks/use-toast"
 import {
   Dialog,
   DialogContent,
@@ -17,7 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Upload } from "lucide-react"
+import { Upload } from 'lucide-react'
 
 export function AddEquipmentDialog({
   children,
@@ -49,9 +50,18 @@ export function AddEquipmentDialog({
       if (response.ok) {
         const { url } = await response.json()
         setUploadedFile(url)
+        toast({
+          title: "File uploaded",
+          description: "Receipt uploaded successfully.",
+        })
       }
     } catch (error) {
       console.error("Upload failed:", error)
+      toast({
+        title: "Upload failed",
+        description: "Could not upload file. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsUploading(false)
     }
@@ -64,8 +74,9 @@ export function AddEquipmentDialog({
     const formData = new FormData(e.currentTarget)
     const supabase = createClient()
 
+    const itemName = formData.get("item_name") as string
     const { error } = await supabase.from("equipment").insert({
-      item_name: formData.get("item_name") as string,
+      item_name: itemName,
       serial_number: (formData.get("serial_number") as string) || null,
       purchase_date: (formData.get("purchase_date") as string) || null,
       value: formData.get("value") ? Number.parseFloat(formData.get("value") as string) : null,
@@ -83,7 +94,17 @@ export function AddEquipmentDialog({
     if (!error) {
       setOpen(false)
       setUploadedFile(null)
+      toast({
+        title: "Equipment added!",
+        description: `${itemName} has been added to your inventory.`,
+      })
       router.refresh()
+    } else {
+      toast({
+        title: "Something went wrong",
+        description: "Could not add equipment. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 

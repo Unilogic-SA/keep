@@ -3,19 +3,19 @@
 import type React from "react"
 
 import { createClient } from "@/lib/supabase/client"
+import { toast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import { useState } from "react"
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [repeatPassword, setRepeatPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
@@ -23,10 +23,13 @@ export default function SignUpPage() {
     e.preventDefault()
     const supabase = createClient()
     setIsLoading(true)
-    setError(null)
 
     if (password !== repeatPassword) {
-      setError("Passwords do not match")
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure both passwords are identical.",
+        variant: "destructive",
+      })
       setIsLoading(false)
       return
     }
@@ -40,9 +43,18 @@ export default function SignUpPage() {
         },
       })
       if (error) throw error
+      
+      toast({
+        title: "Account created!",
+        description: "Please check your email to verify your account.",
+      })
       router.push("/auth/signup-success")
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      toast({
+        title: "Signup failed",
+        description: error instanceof Error ? error.message : "Could not create account. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -81,6 +93,7 @@ export default function SignUpPage() {
                       id="password"
                       type="password"
                       required
+                      minLength={6}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
@@ -91,11 +104,11 @@ export default function SignUpPage() {
                       id="repeat-password"
                       type="password"
                       required
+                      minLength={6}
                       value={repeatPassword}
                       onChange={(e) => setRepeatPassword(e.target.value)}
                     />
                   </div>
-                  {error && <p className="text-sm text-red-500">{error}</p>}
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Creating account..." : "Sign up"}
                   </Button>

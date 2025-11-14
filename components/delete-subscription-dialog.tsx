@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import { createClient } from "@/lib/supabase/client"
+import { toast } from "@/hooks/use-toast"
 import {
   AlertDialog,
   AlertDialogContent,
@@ -40,7 +41,17 @@ export function DeleteSubscriptionDialog({
 
     if (!error) {
       onOpenChange(false)
+      toast({
+        title: "Subscription deleted",
+        description: `${subscription.name} has been removed from your subscriptions.`,
+      })
       router.refresh()
+    } else {
+      toast({
+        title: "Delete failed",
+        description: "Could not delete subscription. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 

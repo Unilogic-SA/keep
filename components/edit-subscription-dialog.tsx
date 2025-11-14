@@ -3,14 +3,15 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import { createClient } from "@/lib/supabase/client"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FileText } from "lucide-react"
+import { FileText } from 'lucide-react'
+import { toast } from "@/hooks/use-toast"
 
 type Subscription = {
   id: string
@@ -61,15 +62,21 @@ export function EditSubscriptionDialog({
         }
       } catch (error) {
         console.error("File upload failed:", error)
+        toast({
+          title: "Upload failed",
+          description: "Could not upload file. Please try again.",
+          variant: "destructive",
+        })
       }
     }
 
     const supabase = createClient()
 
+    const subscriptionName = formData.get("name") as string
     const { error } = await supabase
       .from("subscriptions")
       .update({
-        name: formData.get("name") as string,
+        name: subscriptionName,
         cost: Number.parseFloat(formData.get("cost") as string),
         renewal_date: formData.get("renewal_date") as string,
         billing_cycle: formData.get("billing_cycle") as string,
@@ -86,7 +93,17 @@ export function EditSubscriptionDialog({
     if (!error) {
       onOpenChange(false)
       setSelectedFile(null)
+      toast({
+        title: "Changes saved!",
+        description: `${subscriptionName} has been updated successfully.`,
+      })
       router.refresh()
+    } else {
+      toast({
+        title: "Update failed",
+        description: "Could not save changes. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 

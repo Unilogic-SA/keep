@@ -3,8 +3,9 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import { createClient } from "@/lib/supabase/client"
+import { toast } from "@/hooks/use-toast"
 import {
   Dialog,
   DialogContent,
@@ -53,13 +54,19 @@ export function AddSubscriptionDialog({
         }
       } catch (error) {
         console.error("File upload failed:", error)
+        toast({
+          title: "Upload failed",
+          description: "Could not upload invoice file. Please try again.",
+          variant: "destructive",
+        })
       }
     }
 
     const supabase = createClient()
 
+    const subscriptionName = formData.get("name") as string
     const { error } = await supabase.from("subscriptions").insert({
-      name: formData.get("name") as string,
+      name: subscriptionName,
       cost: Number.parseFloat(formData.get("cost") as string),
       renewal_date: formData.get("renewal_date") as string,
       billing_cycle: formData.get("billing_cycle") as string,
@@ -76,7 +83,17 @@ export function AddSubscriptionDialog({
     if (!error) {
       setOpen(false)
       setSelectedFile(null)
+      toast({
+        title: "Subscription added!",
+        description: `${subscriptionName} has been added to your subscriptions.`,
+      })
       router.refresh()
+    } else {
+      toast({
+        title: "Something went wrong",
+        description: "Could not add subscription. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 

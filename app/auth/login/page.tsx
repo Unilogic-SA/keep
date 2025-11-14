@@ -3,34 +3,25 @@
 import type React from "react"
 
 import { createClient } from "@/lib/supabase/client"
+import { toast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useRouter } from 'next/navigation'
+import { useState } from "react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    console.log("[v0] Login page mounted")
-    return () => {
-      console.log("[v0] Login page unmounted")
-    }
-  }, [])
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] Login form submitted")
     const supabase = createClient()
     setIsLoading(true)
-    setError(null)
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -38,11 +29,18 @@ export default function LoginPage() {
         password,
       })
       if (error) throw error
-      console.log("[v0] Login successful, redirecting to dashboard")
+      
+      toast({
+        title: "Welcome back!",
+        description: "You've been logged in successfully.",
+      })
       router.push("/dashboard")
     } catch (error: unknown) {
-      console.log("[v0] Login error:", error)
-      setError(error instanceof Error ? error.message : "An error occurred")
+      toast({
+        title: "Login failed",
+        description: error instanceof Error ? error.message : "Invalid email or password.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -85,7 +83,6 @@ export default function LoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                     />
                   </div>
-                  {error && <p className="text-sm text-red-500">{error}</p>}
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Logging in..." : "Login"}
                   </Button>

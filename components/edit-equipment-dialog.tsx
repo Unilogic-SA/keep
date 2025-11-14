@@ -3,14 +3,15 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import { createClient } from "@/lib/supabase/client"
+import { toast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Upload } from "lucide-react"
+import { Upload } from 'lucide-react'
 
 type Equipment = {
   id: string
@@ -57,9 +58,18 @@ export function EditEquipmentDialog({
       if (response.ok) {
         const { url } = await response.json()
         setUploadedFile(url)
+        toast({
+          title: "File uploaded",
+          description: "Receipt uploaded successfully.",
+        })
       }
     } catch (error) {
       console.error("Upload failed:", error)
+      toast({
+        title: "Upload failed",
+        description: "Could not upload file. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsUploading(false)
     }
@@ -94,11 +104,12 @@ export function EditEquipmentDialog({
     const newAssignedTo = (formData.get("assigned_to") as string) || null
     const newAvailability = formData.get("availability") as string
     const newCondition = (formData.get("condition") as string) || null
+    const itemName = formData.get("item_name") as string
 
     const { error } = await supabase
       .from("equipment")
       .update({
-        item_name: formData.get("item_name") as string,
+        item_name: itemName,
         serial_number: (formData.get("serial_number") as string) || null,
         purchase_date: (formData.get("purchase_date") as string) || null,
         value: formData.get("value") ? Number.parseFloat(formData.get("value") as string) : null,
@@ -123,7 +134,17 @@ export function EditEquipmentDialog({
 
     if (!error) {
       onOpenChange(false)
+      toast({
+        title: "Changes saved!",
+        description: `${itemName} has been updated successfully.`,
+      })
       router.refresh()
+    } else {
+      toast({
+        title: "Update failed",
+        description: "Could not save changes. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 
